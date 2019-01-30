@@ -9,3 +9,4 @@ while i<=20:
     a3=a1+a2
     i+=1
     print(a3)
+print(a2)

@@ -1,0 +1,103 @@
+数据类型:
+    不可变的数据类型:
+      int ,float, complex, bool,str, tuple,frozenset
+      bytes(字节串)
+    可变的数据类型:
+        list,dict ,set,bytearray(字节数组)
+    
+值:
+    None,False,True,.....
+运算符:
+    + - * / // % ** 
+    += -=... 
+    比较> >= < <= == != 
+    is / is not 是否是同一对象 
+    in / not in 
+    not and or  
+    & | ^  集合中的预算
+    &= |= ^=  复合赋值
+    +(正号)  -(负号) 
+    [] / [:] 索引和切片
+
+表达式:
+    1 
+    1+2
+    函数调用len(L1) + len(L2)
+    条件表达式 :  x if x>y else y
+    全部的推导式 [x for x in range(10)]
+        列表，字典，集合推导式(三种)
+    ******只有赋值才能改变对象的绑定关系
+
+语句:计算机能识别出来，单独的组合
+    表达式语句:
+        print("hello")
+        '''abcd'''
+    赋值语句:
+        a = 100
+        a = b = c = 200
+        x,y,z = 100,200,300
+    del 删除语句
+    if 语句
+    while 语句
+    for 语句
+    break 语句
+    continue 语句
+    pass 语句
+
+内建函数
+    用于所有容器的函数:
+      len(x)
+      max(x)
+      min(x)
+      sum(x)
+      any(x)
+      all(x)
+    构造函数:正好是类型名，创建数据对象
+      int(x)
+      float(x)
+      complex(x)
+      bool(x)
+      str(x)
+      list(x)
+      tuple(x)
+      dict(x)
+      set(x)
+      frozenset(x)
+    数值型函数:
+      abs(x)
+      round(x,y)
+      pow(x,y,z=None)
+    字符串相关的函数:  方法是.后面的
+      bin(x)
+      oct(x)
+      hex(x)
+      chr(x)
+      ord(x)
+    可迭代对象相关的函数:
+      range(start,stop,step)
+      reverse(ｘ)
+    输入输出相关函数:
+      input(x)
+      print(x)
+    其他:
+      type(x)
+      id(x)
+      help(x)
+
+xiaozhang
+18
+90
+1002
+xiaoli
+17
+89
+1003
+xiaowang
+17
+88
+1004
+xiaofang
+20
+77
+1005
+

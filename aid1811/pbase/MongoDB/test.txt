@@ -1,0 +1,10 @@
+{ "name" : "Lily", "age" : 17 }
+{ "name" : "Joy", "age" : 17, "gender" : "m" }
+{ "name" : "Jame", "age" : 20, "gender" : "m" }
+{ "name" : "Emma", "age" : 19, "gender" : "w" }
+{ "name" : "Abby", "age" : 20, "gender" : "w" }
+{ "name" : "Levi", "age" : 18, "gender" : "m" }
+{ "name" : "jack", "age" : 20, "gender" : "m" }
+{ "name" : "Lu", "age" : 19 }
+{ "name" : "Lili", "age" : 20, "gender" : "m" }
+{ "name" : "Han", "age" : 36, "gender" : "w" }

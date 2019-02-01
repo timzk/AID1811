@@ -1,0 +1,255 @@
+GIT  代码协同管理工具
+
+代码管理工具作用: 
+* 防止代码丢失,做代码备份
+* 代码的版本控制,可以设置多个节点,在多个版本间切换
+* 可以方便团队开发,更好的做代码管理
+* 可以方便产品迭代
+
+git是一个开源的分布式版本控制系统,可用于高效的管理大小项目
+
+分布式和集中式
+分布式: 每个节点都保存完整代码,没有明确的中央服务器,节点之间相互推送共享代码.
+集中式: 代码由中央服务端集中管理,为每个节点分配权限,每个节点统一上传到中央服务器,或从服务器下载
+
+git特点
+* git可以管理各种文件,特别是代码项目,多在*nix系统使用
+* git是分布式,不同于svn的集中式,这是git和svn的最大差别
+* git是开源系统,可以脱网使用,数据传输速度快
+* git更好的支持分支协作,分布式代码更安全
+
+git安装
+  sudo apt-get instll git
+git 配置命令
+  git config
+  配置级别: 
+     1. 系统中所有用户都可使用该配置
+        命令: git config --system
+        配置文件: /etc/gitconfig
+     2. 当前用户可使用该配置
+        命令: git config --global
+        配置文件: ~/.gitconfig
+     3. 当前项目可使用该配置,必须在项目目录下执行
+        命令: git config
+        配置文件: project/.git/config
+  
+  配置内容: 
+     1. 配置用户名
+        e.g. 配置用户名为 Tedu
+        git config --global user.name Tedu
+     2. 配置邮箱
+        sudo git config --system user.email tim@qq.com
+     3. 配置编译器
+        e.g. 编译器配置
+        git config core.editor vscode
+     4. 查看项目配置
+        git config --list
+
+git的基本命令
+  1. 初始化仓库
+     git init 
+     * 在某个目录下初始化仓库后自动产生.git目录,则该目录变为一个git仓库,在该目录下的所有文件
+       可以使用git管理
+     工作区: 用于用户对项目文件的各种直接操作,即项目目录操作
+     暂存区: 用于记录用户对工作区各种修改以便同步到本地仓库中
+
+     git 仓库: 用于存储备份工作区的内容,方便git进行管理
+  2. 查看分支状态
+     git status
+     分支: 在git仓库中一个独立的工作环境,不影响其他分支操作.git仓库初始默认工作分支master
+  3. 文件提交
+     git add [file]
+     * 可以一次提交多个文件或者单个文件,或者*表示所有文件.(隐藏文件必须指明不能用*)
+     * 提交内容可以是普通文件也可以是目录
+     * 暂存区只是做工作区的提交修改记录,并不是将文件备份存储
+
+     取消某个文件的暂存记录
+     git rm --cached <filename>/*
+  4. 将文件同步到本地git仓库
+     git commit -m "some message"
+     * 同步要添加说明,只能同步已提交到暂存区内容
+
+     将仓库文件恢复到工作区
+     git checkout -- <filename>/*
+  5. 查看commit 日志
+     git log
+     git log --pretty=oneline
+  6. 查看本地文件和仓库差异
+     git diff [file]
+  7. 从仓库恢复文件到工作区
+     git checkout [file]
+  8. 文件的移动和删除
+     git mv [file]  恢复git reset HEAD a/11.txt
+     git rm [file]
+
+     * 与add操作相同,即将文件移动删除提交到暂存区
+
+---------------------------------------------------------------
+复习
+1. 正则表达式compile对象属性变量
+2. 正则表达式match对象属性和函数
+3. git使用
+   什么是代码管理工具?
+   什么是git?
+   git的基本命令操作
+---------------------------------------------------------------
+
+版本控制命令
+  1. 回到之前的commit ID位置
+    git reset --hard HEAD^
+    * HEAD后有几个^就表示退回几个commit位置 (之后)
+
+    get reset --hard commit_id
+    * commit_id用前7位即可,即退回到指定版本
+    * 选定commit_id表示HEAD指定选定的id而不是恢复到指定的commit_id版本 (之前)
+
+  2. 去往之前较新的版本
+    git reflog 查看历史版本记录
+    * 查看后使用git reset --hard 即可选择回到某个操作之后的状态
+
+标签管理
+  什么标签: 即在某个commit_id位置添加快照,保存工作状态,一般用于版本的迭代,和重要项目节点记录
+  1. 创建新的标签
+     git tag v1.0
+     * 默认在最新的commit_id 处添加标签
+
+     git tag v1.0 [commit_id]
+     * 也可以指定一个commit_id版本
+
+     git tag v1.0 -m "message"
+     * 为标签添加信息
+
+  2. 查看标签
+     git tag  列出当前标签
+     git show v1.0 显示标签具体信息
+
+  3. 去往某个标签版本
+     git reset --hard v1.0
+
+  4. 删除标签
+     git tag -d v0.9
+
+  5. 临时工作区操作
+     1) git stash 保存临时工作区
+      * 对工作区文件的修改进行临时保存,在stash list里为堆型结构(先进的索引排在后)
+
+     2) git stash list 查看已经保存临时工作区记录
+      * 最新的保存为{0}以此类推 
+
+     3) 选择应用某个工作区
+      * git stash apply stash@{0}
+      * 执行该命令时,工作区必须为"干净"状态
+
+     4)删除临时保存stash的工作区
+     git stash drop stash@{1} 删除某一个
+     git stash pop 恢复最新保存的工作区并将其删除
+     git stash clear 删除全部
+
+分支操作
+  什么是分支: 分支即每个人获取原有代码,在此基础上创建自己的工作环境,单独开发,不会影响其他
+            分支工作,开发完成后再统一合并.
+  
+  1.查看当前工作分支
+    git branch 列出所有项目分支,*的表示当前工作分支
+            
+  2.分支创建和切换
+    创建
+    git branch [branch_name]
+    * 创建新的分支时最好确保当前分支时"干净的"
+    切换
+    git checkout [branch_name]
+    创建并切换分支
+    git checkout -b [branch_name]
+  
+  3.合并分支
+    git merge [branch_name]
+    * 在master分支执行该命令,即将其他分支内容合并到master
+
+    * 当合并分支产生冲突时,需要手动更改提交
+
+  4.删除分支
+    git branch -d [branch_name]
+    * 如果分支没有被合并删除不了,则需要用-D强制删除
+
+帮助文档
+    git help [命令名称]
+
+远程仓库
+   远程仓库: 即远程主机上的git仓库,实际git为分布式结构,每台主机git仓库都相似,只是把其他主机
+           中的git仓库称为远程仓库.
+   
+   1. 创建共享远程仓库
+      1) 创建仓库目录,设置目录属主
+         mkdir gitrepo
+         chown tarena:tarena gitrepo
+      2) 将仓库目录使用 --bare 初始化,给仓库起名称
+         cd gitrepo 
+         git init --bare spyder.git
+      3) 设置spyder.git目录属主与项目目录相同
+         chown -R tarena:tarena spyder.git
+
+   2. 远程仓库连接协议
+      * 本地协议
+        直接通过路径连接一个项目仓库
+        e.g. /opt/git/project.git
+             file:///opt/git/project.git
+      * SSH协议
+        通过ssh协议方式连接远程
+        e.g. ssh://user@server_addr/project.git
+             user@server_addr:/project.git
+      * git协议
+      * HTTP/HTTPS协议
+        e.g. git clone htt://example.com/project.git
+
+    3. 添加远程主机仓库
+       git remote add origin
+       git remote add origin tarena@127.0.0.1:/home/tarena/gitrepo/test.git  
+       *该命令必须在某个git项目目录下运行
+       删除远程主机: git remote rm [远程主机名]
+
+    4. push将本地分支推送到远程
+       将本地的master分支推送到远程
+       git push -u origin master
+       * -u表示本地master和远程master建立追踪关系这样后面本地分支修改后再向远程推送则
+          可以省略分支名
+
+       向远程推送标签
+       git push origin v1.0 某一个标签
+       git push origin --tags  所有标签
+
+       删除远程分支
+       git push origin --delete tom_dev
+
+    5. clone远程仓库项目
+       git clone tarena:127.0.0.1@/home/tarena/gitrepo/spyder.git
+
+    6. git pull
+       *自动从远程分支
+
+    7. git fetch
+
+github使用
+    什么是github: 是一个开源项目社区网站,拥有全球最多的开源项目,开发者可以注册网站
+                 建立自己的git仓库,然后可以同步管理自己的项目代码,git是github唯一
+                 指定管理工具
+
+                 网址: https://github.com
+
+    从github获取项目
+         1. 左上角搜索项目名称
+         2. 选择合适项目
+         3. 使用git clone到本地
+
+    创建自己的仓库
+         1. 右上角+ 下拉菜单  new repository
+         2. 填写项目名称等信息
+         3. 在本地连接github的远程仓库,即可进行push,pull等操作
+
+    ssh连接: 使用ssh连接时需要秘钥配对
+       1. 在某台主机生成秘钥
+          ssh-keygen
+
+          *生成后秘钥存放在主目录~/.ssh目录下  
+       2. 进入~/.ssh下复制公钥(id_ras.pub)内容
+       3. 进入github账户,右上角头像下拉,settings,选择ssh and GPG keys,选择
+          new ssh key,填写title,将复制的公钥内容填入文本框,点击add确定

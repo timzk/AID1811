@@ -1,0 +1,306 @@
+day1回顾:
+1.基本概念:数据库是数据集中存放的仓库
+  a)数据按照一定数据模型,进行搞笑的数据管理,存放的数据仓库
+  b)数据库管理系统(DBMS):专门用于数据管理功能
+    软件系统,提供了丰富的功能,工具
+    - 数据的高效存取
+    - 安全性,可靠性工具
+    - 各种语言提供接口
+    - 优化工具
+    - 其它工具,方便用户使用
+  c)数据库系统:数据库软硬件,应用程序,人员/角色(DBA)
+  d)数据管理三个阶段:人工管理,文件系统,数据库管理
+  e)关系数据库:使用关系(规范的二维表)来表示数据,数据之间的联系
+  f)重要概念:
+    实体:现实中可以区分的事物
+    关系:二维表,包含行和列,每个属性都不可再分
+    元组:关系中的一行,一个元组表示一个数据,一个实体
+    属性:实体的数据描述
+    键:可以区分实体的属性(或属性组合)
+    主键:多个键中选取一个作为主键,从逻辑上唯一来区分实体,要求非空,不重复
+2.基本操作
+  1.服务:/etc/init.d/mysql stutus | start | stop |
+  2.库管理:
+    新建:create database 
+    查看: show databases
+    删除: drop database
+    进入/切换库: use 库名称
+    查看当前所在库: select database();
+  3.表管理
+    创建:create table 表名称(
+        字段1,类型(长度),
+        字段2,类型(长度)
+        );
+    查看:show tables;
+    查看表结构:desc 表名称
+    查看建表语句: show create table 表名称
+    删除表: drop table 表名称
+  4.数据管理:
+    a)插入: insert into 表名 values(值1,值2)
+      insert into acct values('001','Jerry',1,10.00)
+      insert into acct values
+      ('001','Jerry',1,10.00),
+      ('002','Tom',1,10.00),
+      ('003','kevin',1,10.00);
+      insert into acct(acct_no,acct_name)
+      values('002','Tom');
+    b)查询:select 字段列表 from 表名 where 条件
+      select * from acct
+      where acct_no = '000'
+        and acct_name = 'Jerry'
+3.数据类型
+  - 数值型:整数,浮点数
+  - 字符:char(定长),varchar(变长)
+  - 枚举:enum,set
+
+day02内容
+1.日期时间类型
+  - 日期: date,范围'1000-01-01'~'9999-12-31'
+  - 时间: time,时分秒
+  - 日期时间: datetime'1000-01-01 00:00:00'~'9999-12-31 23:59:59'
+  - 时间戳:timestamp,记录某个时间发生的时间点
+  - 日期时间函数:
+  now()     取当前系统时间
+  sysdate() 取当前带年月日的系统时间
+  curdate() 取当前系统日期
+  curtime() 取当前系统时间
+  year()    取指定日期中的年份
+  month()   取指定日期中的月份
+  day()     取指定日期中的天
+  date()    取指定日期时间中的年月日
+  time()    取指定日期时间中的时分秒
+
+  select now(),sysdate(); -- 取当前系统日期时间
+  select curdate(),curtime(); -- 取当前日期,时间
+  -- 先取出系统日期时间,再取出年份,月份,天;
+  select year(now()), month(now()), day(now());
+
+  --先取出系统日期时间,再取出日期,时间部分
+  select date(now()), time(now());
+2.数据操作(更新,删除):
+  1)更新
+    - 语法格式
+      update 表名称
+        set 字段1 = 值1,
+            字段2 = 值2,
+            ...
+      where 条件表达式;
+    - 示例:
+      update acct 
+       set status = 2 
+       where acct_no = '622345000001';
+
+      e.g. 将账户622345000001余额增加10000
+      update acct
+        set balance = balance + 1000
+        where acct_num = '622345000001'
+           
+    - 注意事项:
+        修改的值要和字段的值,长度相匹配
+        修改时要使用条件限定,如果不限定则修改所有
+        如果没有满足条件的数据,则修改笔数为0
+  2)删除记录
+    - 语法格式:
+      delete from 表名称 where 条件表达式;
+
+      e.g. 删除账号为'622345000001'的账户信息
+      *特别注意:删除数据时一定要带条件
+
+3.运算符操作
+  1)比较操作符:>,<,>=,<=,<>或!=
+    e.g. 查询账户余额小于5000的账户
+    select * from acct where balance < 5000;
+  2).逻辑运算符: and,or
+    - and:多个条件同时满足
+    - or:满足多个条件其中的一个
+
+    e.g. 查询余额大于0且状态为2的账户
+    select * from acct 
+      where balance >0 and status = 2;
+    e.g. 查询状态为1或状态为2的账户信息
+    select * from acct
+      where status  = 1
+      or status = 2;
+
+    e.g. 多个条件组合,满足括号中的条件,再判断括号外边的条件
+    select * from acct
+      where (acct_num = '6223450000002' or acct_num = '6223450000002')
+      and status  = 1;
+  3) 范围比较
+    - in: 在某个范围(集合)中
+    - not in: 不在某个范围(集合)中
+    - betwenn  and  : 在...与...之间
+
+    e.g. 使用in查询账号在某个指定范围内的账户信息
+    select * from acct
+      where acct_num in ('622345000001','622345000001');
+
+    e.g. 使用between 查询余额在某个范围之内的账户信息(包含两个边界值)
+    select * from acct
+      where balance between 3000 and 5000;
+  4)模糊查询:like 
+    - 格式: where 字段名称 like '通配符字符串'
+    - 通配符_匹配单个字符
+    - 通配符%表示匹配任意个字符
+
+    e.g. 查询以D开头的户名的所有账户
+    * 注:'D%'表示D后面可以跟任意个字符
+         'D_'表示D后面跟一个任意字符
+    select * from acct where acct_name like 'D%'
+
+  5)空/非空判断(NULL,是一个特殊值,不能用等号判断)
+    - 判断空: is NULL
+    - 判断非空: is not NULL
+    select * from acct where acct_type is null;(空)
+    select * from acct where acct_type is not null;(非空)
+
+    e.g. 查询客户编号为空串或null的账户
+    select * from acct where cust_num = ''  -- 判断空字符串
+      or cust_num is null;  -- 判断空值
+
+4.查询字句:排序\分组\筛选
+  1)order by 子句
+    - 作用:对查询结果按照某个字段值进行排序
+    - 格式:order by 排序字段 [asc升序/desc降序],不写排序依据,默认升xu
+    e.g. 查询账户信息,按照账户余额升序排序
+    select * from acct order by balance asc;
+    e.g. 查询账户信息,按照账户类型升序\金额降序
+  2)limit子句
+    - 作用:限定显示的查询结果笔数
+    - 格式:limit n 只显示前面n行
+          limit m,n 从m笔开始显示,总共显示n笔(通常用作分页查询),m = (页数-1) * 每页笔数
+    e.g. 查询账户余额最大的前3个账户
+    select acct_num,acct_name,balance from acct order by balance desc -- 倒序排列
+    limit 3;
+    e.g. 从第一笔开始,显示3笔数据
+    select acct_num, acct_name, balance from acct order by balance desc limit 0,3;
+    * 注: 经常利用limit m,n子句进行查询分页处理
+          m表示起始的行数(从0开始)
+          n表示每页有多少行
+          利用当前显示第几页\每页多少行就能计算出m和n的值,实现分页查询
+          m = (页数 -1) * 每页多少笔
+          n = 每页显示的笔数
+
+  3)聚合函数:最大值/最小值/平均值/求总和,返回的都是一行一列的集合
+    - max / min:求最大值/最小值
+      e.g. 求所有账户余额的最大值
+      select max(balance) from acct;
+    - avg: 求平均值
+      e.g. 求所有账户余额的平均值
+      select avg(balance) from acct;
+    - sum: 对字段求和
+      e.g. 求所有账户余额之和
+      select sum(balance) from acct;
+    - count:统计笔数
+      e.g. 统计账户数量
+      select count(*) from acct;
+      * 注: count后的括号中可以跟字段/数字,但是如果跟字段,当字段值为null则不会参与统计
+
+  4)group by 子句
+    - 作用:对查询结果进行分组,通常和聚合函数配合使用
+    - 格式:group by 分组字段名称
+      e.g. 统计各种状态账户数量
+      select count(*),acct_type from acct
+        group by acct_type;
+      
+      e.g. 统计各类账户余额的最大值
+      select acct_type "账户类型",max(balance) "最大余额",
+        from acct group by acct_type;
+        
+/**************************************************************\ 
+  5)having 子句
+    - 作用:对分组聚合的结果进行筛选/过滤
+          需要和group by 子句配合使用
+    - 格式:group by 分组字段 having 过滤条件
+    - 示例:统计各类账户余额总和,不显示余额为null的数据
+      select acct_type "类型", sum(balance) "总余额"
+        from acct 
+        -- where acct_type in (1,2,3,4)
+        group by acct_type
+        having acct_type is not null;
+        order by acct_type desc   -- 对结果集进行排序
+        limit 1   -- 再对排序后的结果进行分页显示,只显示2个数据
+        -- 或者having sum(balance) > 5000;
+       
+    - SQL语句的执行顺序(难点)
+      第一步:from acct 
+            -- 首先执行from, 找到源数据
+      第二步:where 条件过滤 
+            -- 选出所有满足条件的数据
+      第三步:group by 子句 
+            -- 进行分组 
+      第四步:sum(balance), acct_type
+            -- 按照分组,对每组进行统计
+      第五步:having acct_type is not null
+            -- 把聚合以后不满足条件的数据过滤掉
+      第六步:order by acct_type desc
+            -- 按照统计(聚合)结果排序
+      第七步:limit 1
+            -- 限定显示笔数(分页)
+
+      -补充说明:having 子句只能对group by子句的结果过滤
+               where只能限定表中实际存在的字段,位于from后
+\**************************************************************/
+  6)distinct子句
+    - 作用:对某个字段值去重
+    - 格式:select distinct(字段名称) from 表名称
+    - 示例:
+      e.g. 查看账户表中一共有多少种账户类型
+      select distinct(acct_type) from acct;
+
+5.表结构调整(alter table)
+  1)添加字段
+    - 添加到最后一个字段
+      alter table 表名称 add 字段名称 类型(长度)
+    - 添加到第一个字段
+      alter table 表名称 add 字段名称 类型(长度) first
+    - 添加到指定位置
+      alter table 表名 add 字段名 类型(长度) after 字段
+    - 示例
+      create table student(
+        stu_no varchar(32),
+        stu_name varchar(64)
+      );
+      添加字段
+      alter table student add age int;-- 添加到最后
+      alter table student add tel_no varchar(32) after stu_name; -- 添加到指定位置stu_name后面
+
+  2)修改字段
+    - 修改字段类型
+      alter table 表名 modify 字段名 类型(长度)
+    - 修改字段名称
+      alter table 表名 change 旧字段名 新字段名 类型(宽度)
+    - 示例:
+      alter table student modify stu_name varchar(128); -- 把stu_name字段长度改为128
+      alter table student change age stu_age int;  -- 把age字段改为stu_age字段
+
+  3)删除字段
+    - 语法: alter table 表名 drop 字段名
+    - 示例: 删除id字段
+           alter table student drop id;
+  
+作业:
+1.创建库eshop,模拟电子商务平台  ,并指定编码为utf8
+2.创建订单表(orders,utf8编码),包含如下字段:
+  order_id      订单编号,字符串,长度32字节
+  cust_id       客户编号,字符串,长度32字节
+  orger_date    下单时间,DateTime 类型
+  status        订单状态,枚举类型,取值范围('1','2','3','4','5','6','9')
+                1-待付款  2-待发货  3-已发货   4-已收货   5-申请退货    6-已退货    9-已废弃
+  products_num  订单包含的商品数量
+  amt           订单总金额,浮点数,两位小数
+3.至少插入5笔数据(要求数据库看上去尽可能真实)
+4.编写如下SQL语句
+  1)查找所有待付款订单
+  2)查找所有已发货/已收货/申请退货订单
+  3)查找某个客户的待发货订单
+  4)根据订单编号,查找订单下单日期/订单状态
+  5)查找某个客户所有订单,并按照下单时间倒序排序
+  6)统计每种状态的订单数量
+  7)查询所有订单最大值/最小值/平均值,所有订单总金额
+  8)查询金额最大的前3笔订单
+  9)在表的最后,添加两个字段:
+    invoice        开票状态,整数
+    invoice_date   开票日期,DateTime类型
+  10)修改某个订单状态为"已收货"
+  11)删除已废弃的订单

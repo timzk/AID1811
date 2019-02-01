@@ -1,0 +1,200 @@
+day04回顾
+1. 修改操作
+   updateOne()修改一个文档
+   updateMany() 修改所有符合筛选文档
+   update() 
+   findOneAndUpdate()  查找一个文档并修改
+   findOneAndReplace() 查找一个文档并替换
+2. 修改器
+  $set 修改或增加一个域 $unset删除一个域 $rename修改域名称 $setOnInert
+  $inc 加法 $mul乘法  $max下限  $min上限
+
+  $push增加一项  $pushAll增加多想 $pull删除一个数据 $pullAll删除多项
+  $pop  弹出一项  $addToSet 不能和已有重复
+  $each 逐个操作 $position去重  $sort排序
+3. 数据类型
+  时间类型: Date() ISODate()  valueOf()时间戳
+  Null类型: null表示空或者匹配不存在的域
+  Object类型: 通过.获取内部文档值
+4. 索引操作
+  创建索引: createIndex() ensureIndex() createIndexes()
+  删除索引:dropIndex() dropIndexes()
+
+  查看索引: getIndexes()
+5. 聚合操作
+  aggregate() 筛选查找展示
+  $group 分组聚合
+****************************************************************
+
+统计求和: $sum 
+  统计平均数:$avg
+    e.g. 根据性别分组,求每组年龄的平均值
+    db.class0.aggregate({$group:{_id:'$gender',平均值:{$avg:'$age'}}})
+  求最大值: $max
+    e.g. 根据性别分组,求每组年龄的最大值
+    db.class0.aggregate({$group:{_id:'$gender',最大值:{$max:'$age'}}})
+  求最小值: $min
+    e.g. 根据性别分组,求每组的最小值
+    db.class0.aggregate({$group:{_id:'$gender',最小值:{$min:'$age'}}})
+  求第一个数:  $first
+    e.g. 根据性别分组,求每组的第一个数
+    db.class0.aggregate({$group:{_id:'$gender',第一个数:{$first:'age'}}})
+  求最后一个数: $last
+    e.g. 根据性别分组,求每组的最后数
+    db.class0.aggregate({$group:{_id:'$gender',第一个数:{$last:'age'}}})
+
+  $project: 用于格式化显示内容
+    *值的写法同find的field参数
+    e.g. 按照指定域名显示
+    db.class0.aggregate({$project:{_id:0,名字:'$name',age:1}})
+  
+  $match : 筛选数据
+    * match值写法与find的query参数相同
+    e.g. 筛选年龄大于20的文档
+    db.class0.aggregate({$match:{age:{$gt:20}}})
+
+  $limit 显示前几条文档
+    e.g. 显示前三条文档
+    db.class0.aggregate({$limit:3})
+
+  $skip 跳过前几条文档
+    e.g. 跳过前面三条,显示后面的内容
+    db.class0.aggregate({$skip:3})
+
+  $sort 对所选的域排序显示
+    e.g. 按照年龄排序,1为升序,-1为降序
+    db.class0.aggregate({$sort:{age:1}})
+
+聚合管道
+  指将多个聚合操作合并到一起,即上一个聚合的结果交给下一个聚合继续操作,最终完成一个较复杂的功能
+  aggregate([{聚合1},{聚合2}...}])
+  e.g. db.class0.aggregate({$sort:{age:-1}},{$project:{_id:0}},{$limit:3},{$skip:2})
+
+  按照性别进行排序,不显示_id
+  e.g. db.class0.aggregate({$match:{gender:'m'}},{$sort:{age:1}},{$project:{_id:0}},{$limit:3})
+  统计以下班级中有无重名同学
+  e.g. db.class0.aggregate({$group:{_id:'$name',个数:{$sum:1}}},{$match:{个数:{$lt:2}}})
+
+固定集合
+  指的是mongodb中创建的固定大小的集合
+
+  特点: 1. 能够淘汰早期数据
+       2. 能够控制集合大小
+       3.结构紧凑,插入查找速度较快
+
+  使用: 日志处理,  临时缓存
+
+  创建: 
+  e.g.   db.createCollection('log',{capped:true,size:10000,max:3})
+  capped:true  表示创建固定集合
+  size:10000       表示集合中最多存放多少字节数据  
+  max:3     表示集合中最多存放多少个文档
+
+文件存储
+  文件存储数据库方式
+  1. 存储路径: 将本地文件所在的路径以字符串存储到数据库中
+     优点: 节省数据库空间, 从数据库获取存储比较简单
+     缺点: 当数据库或者文件发生变动时,必须修改数据库存储内容
+  2. 存储文件本身: 将文件转换为二进制存储到数据库
+     优点: 文件随数据库移动,数据在文件即在
+     缺点: 占用数据库空间大,存储效率低
+
+GridFS 文件存储方案
+  目的: 更好的帮助存储MongoDB中超过16m的大文件
+
+  方案解释: 在mongodb数据库中创建两个集合,共同存储文件,一个存储文件信息,一个存储文件内容.两个
+           集合相互配合.
+
+             fs.files: 存储文件信息(文件名,大小等)
+             fs.chunks: 以二进制形式存储文件内容
+  存储方法: mongofiles -d dbname put file
+                           数据库      要存储的文件
+          e.g.  mongofiles -d grid get ./11.txt
+    
+  获取方法: mongofiles -d dbname get file
+             * file 必须是fs.files中filename值
+
+  优缺点: 
+       优点:  存储方便,提供了较好的命令,方便数据库移动
+       缺点:  读写效率低,不建议存储小文件
+ 
+  mongo shell 对JavaScript支持
+    在mongo shell下可以直接运行JS代码
+
+python 模块 -->pymongo 第三方模块
+    安装: sudo pip3 install pymongo
+    操作步骤：
+      1. 创建mongodb数据库连接对象
+         conn = pymongo.MongoClient('localhost',27017)
+      2. 创建数据库操作对象
+         db = conn.stu
+         db = conn['stu']
+      3. 生成集合对象
+         myset = db.class0
+         myset = db['class0']
+      4. 通过集合对象,操作数据库
+      5. 关闭数据库连接
+         conn.close()
+
+  查找操作:
+    find()
+    功能: 查找所有文档
+    参数: 同mongo shell find
+    返回: 游标对象
+
+    * 所有操作符在python中以字符串方式传入参数结构
+    * mongo中true false null 对应python中的True False None
+
+    cursor 对象属性
+    next()获取下一个文档
+    limit()显示前几条文档
+    skip()跳过前几条
+    count()计数
+    sort()排序
+
+    * 调用limit skip sort 时要求游标必须是完整的没取过值的
+
+    find_one()
+    功能: 查找一个文档
+    参数: 同find()
+    返回: 返回一个字典
+
+修改操作
+  update_one() 修改一条文档
+  update_many() 修改多条文档
+  update()
+
+索引操作
+  create_index()
+  功能: 创建索引
+  参数: 直接写要创建索引的域名
+       e.g. 'name' 表示对name创建正向索引
+       是以元组的形式写入创建索引键值对
+       e.g. [('name',-1)] 表示对name创建逆向索引
+  返回: 返回索引名
+
+  list_indexes() 查看索引 
+
+  drop_index() 
+功能: 删除一个索引
+参数: 索引名称
+
+  drop_indexes() 删除所有索引
+
+聚合操作
+  aggregate([])
+  参数: 同mongoshell 中聚合
+  返回值: 和find()相同返回一个游标对象
+
+文件操作
+  Binary data: mongodb中二进制格式
+
+  文件存储步骤:
+  1. 连接数据库,生成数据库对象,集合对象
+  2. 选择要存储的文件以rb方式读取
+  3. 将读取内容转换为mongodb二进制存储方式
+      content = bson.binary.Binary(data)
+      功能: 将bytes字串数据转换为Mongo的二进制存储形式
+      参数: 要存储的内容
+      返回值: 转换后的待存储数据
+  4. 将存储内容放入文档,插入数据库

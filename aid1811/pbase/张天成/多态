@@ -1,0 +1,15 @@
+多态:一种事物的多种形态(面试官指的多态就是继承覆盖)
+多态性:在继承的基础上,创建的不同对象,调用同一个方法名,得到不同的结果
+class animal:
+    def run(self):
+        print("开始跑了")
+class cat(animal):
+    def run(self):
+        print("猫开始跑了")
+class dog(animal):
+    def run(self):
+        print("狗开始跑了")
+cat1 = cat()
+dog1 = dog()
+cat1.run()
+dog1.run()

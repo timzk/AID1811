@@ -1,0 +1,271 @@
+day03回顾
+1.约束(constraint)
+  1)数据库层面对数据添加的规则,维护数据一致性,完整性,正确性
+  2)类型:非空/唯一性/主键/默认值/自动增加/外键约束
+
+2.索引
+  1)提高查询检索效率的技术,通过避免全表扫描提高查询效率
+  2)优缺点
+  - 优点:提高查询效率
+  - 缺点:增加额外的存储空间,降低增删改的效率
+
+  3)索引使用注意事项
+  - 使用恰当的索引,并不是越多越好
+  - 适合使用索引的情况
+    经常查询的字段
+    数据相对较为连续/均匀的字段适合建索引
+    经常用于排序的字段适合建立索引
+  - 不适合建立索引的情况
+    经常不查询的字段不适合建立索引
+    字段的值较少,不适合建立索引
+    表的数据量很小,不适合建立索引
+    二进制格式的字段,不适合建立索引
+
+3.导入导出
+  导出:
+     select * from acct
+     into outfile '文件路径' -- secure_file_priv
+     fields terminated by '字段分隔符'
+     lines terminated by '行分隔符'
+
+  导入:
+     load data infile '文件路径'
+     into table '表名'
+     fields terminated by '字段分隔符'
+     lines terminated by '行分隔符'
+
+4.表的复制/重命名
+ 1) create table 表名称 查询语句
+ 2) alter table 原表名称 rename to 新表名称
+-------------------------------------------------------------------
+day05内容
+1.子查询(一个查询中,包含另一个查询)(重点)
+2.连接查询(两个或多个表中,查询返回一个结果)(重点)
+3.权限管理(分配用户的管理权限)
+4.数据库事务
+------------------------------------------------------------------
+1.子查询
+  1) 什么是子查询:查询语句中包含另一个查询也叫嵌套查询
+     例如:查询发生过交易的账户信息
+     select * from acct where acct_no in (
+         --外层查询
+         select distinct acct_trans_detail
+     )
+     说明:括号中的部分称之为子查询,先执行子查询,返回一个结果集,再执行外层查询
+         子查询返回的结果,要和外层查询的条件匹配,子查询只执行一次
+  2) 什么情况下使用子查询
+     - 一个查询语句无法实现
+     - 一个查询语句实现不方便/不直观
+  3) 单表子查询
+     - 示例: 查询所有余额大于平均余额的账户
+     select * from acct 
+     where balance > (select avg(balance) from acct);
+
+  4) 多表子查询
+     - 示例1: 查询所有发生过交易的账户信息
+     select * from acct where acct_num in (
+         select distinct acct_num from acct_trans_detail
+     );
+     - 示例2:查询所有未发生过交易的账户信息
+     select * from acct where acct_num not in (
+         select distinct(acct_num) from acct_trans_detail
+     );
+     - 示例3:查询所有发生过大金额交易的账户信息
+     select * from acct where acct_num in (
+         select distinct(acct_num) from acct_trans_detail where amt > 8000
+     );
+
+2.连接查询(联合查询)
+  1) 笛卡尔积
+     - 定义:两个集合的乘积,每个集合中的元素两两组合产生的新集合
+     - 意义:表示两个集合所有可能的情况组合
+       A:学生集合  B:课程集合
+       A和B的笛卡尔积表示所有学生可能的选课情况
+
+       A:所有声母       B:所有韵母
+       A和B笛卡尔积表示所有可能的拼音组合
+     - 笛卡尔积和关系(二维表):
+       笛卡尔积中可能含有不存在(没有实际意义)数据
+       去掉这部分数据就是关系
+       例如:bun在汉语拼音中不存在,应该去掉
+  
+  2) 连接查询
+     - 什么是连接查询:将两个或多个表连接起来得到一个新表(可以叫表的连接)
+     - 什么时候使用连接查询:当从一个表中无法获得所有想要的数据时候,使用联合查询
+                        (前提是两个表数据有关联关系)
+    示例:查询两个表,其中acct表中的acct_num与customer表中的cust_no有关联关系
+       select acct.acct_num,acct.acct_name,customer.tel_no
+            from acct,customer where acct.cust_num = customer.cust_no;
+       或者用别名的方式来查询
+        select a.acct_num,a.acct_name
+        from acct a,customer c where a.cust_num = c.cust_no;
+    *通过字段关联,如果关联到数据则显示,如果未关联到数据,则不显示,这种连接查询称之为内连接
+  3) 连接分类
+     - 内连接:关联到的数据显示,没有关联到数据不显示
+       格式:
+        select 字段列表 from 表A
+            inner join 表B 
+            on 关联条件
+        select a.acct_num '卡号',a.acct_name '户名',c.tel_no '电话' from acct a inner join customer c 
+        on a.cust_num = c.cust_no;
+     - 外连接:没有关联到的数据也显示(指定哪个表的数据全部显示)
+       左连接:左边为主,左表内容全部显示,右表匹配
+         格式:from 后面是左表,join后面是右表
+         select 字段列表 from 表A
+         left join 表B
+         on 关联条件
+        示例:查询账户/户名/客户电话,如果账户对应的客户不存在,也要显示账户/户名
+        select a.acct_num, a.acct_name, c.tel_no from acct a
+        left join customer c
+        on a.cust_num = c.cust_no;
+
+      右连接:右表为主,右表内容全部显示,左表匹配右连接
+        select a.acct_num, a.acct_name, c.tel_no from acct a
+        right join customer c
+        on a.cust_num = c.cust_no;
+
+3.权限管理(难点)
+ 1)权限:规定用户可以进行哪些操作
+ 2)分类:
+   - 用户类:创建用户/删除用户/给用户授权
+   - 库操作:创建库/删除库/
+   - 表操作:创建表/删除表
+   - 数据操作:增/删/改/查
+ 3)权限表
+   - user:最重要的权限表,记录了允许连接到服务器的用户及具有的权限
+   - db:记录库的授权信息
+   - tables_priv:记录表的授权信息
+   - columns_priv:记录字段的授权信息
+ 4)授权
+   - 语法:
+     grant 权限列表 on 库名称.表名称
+     to '用户名'@'客户端地址'
+     [identified by '密码']
+     [with grant option]
+   - 说明:
+     权限列表:被授权用户拥有哪些权限
+        all privileges:所有权限
+        select, insert, update, delete:分别指定权限
+   - 库名称.表名
+       *.*         表示为所有库/所有表授权授权
+       bank.*      表示为bank库下所有表授权
+       bank.acct   特指bank库下的acct表
+
+   - 客户端地址
+       %           表示所有客户端
+       localhost   表示本机
+       192.168.1.5 表示指定的192.168.1.5这个地址登录
+
+   - 示例:
+     示例1:给Daniel用户授予所有库/所有表的权限,所有客户端都能访问,并且将密码设置为'123456'
+          允许该用户向其他用户授权
+
+        grant all privileges on *.*
+        to 'Daniel'@'%'
+        identified by '123456'
+        with grant option; -- 是否可以给其他用户授权
+
+        执行成功后,重新加载权限设置:
+        flush privileges
+
+        重新登录Daniel用户验证:
+        mysql -uDaniel -p123456
+
+     示例2:给Tom用户授权,能够对所有库/所有表
+          进行查询,限定只能从本机登录,密码'123456'where
+          grant select on *.* to 'Tom'@'localhost'where
+          identified by '123456';
+        注:除了查询所有库,所有表功能外,其他功能均where
+
+    课堂练习: 
+       给用户Jerry授权,只能访问bank库下的表能够对该库的所有表增删改查
+       (insert ,delete, update, select)可以从任意客户端登录
+       grant insert, delete, update, select on bank.* to 'Jerry'@'%'
+       identified by '123456'
+
+    - 查看自己的权限:show grants
+    - 查看其他用户权限:
+      show grants for 'Tom'@'localhost';
+  5) 吊销权限
+    - 语法: revoke 权限列表 on 库名.表名
+            from '用户'@'客户端地址'
+      示例:吊销Jerry用户bank库下的delete权限
+          revoke delete on bank.*
+          from 'Jerry'@'%';
+        
+/*****************************************************************\
+4.数据库事务(重点)
+  1)是事务(Transaction):数据库的一系列操作,要么全都执行,要么全都不执行
+  2)作用:保证数据一致性/正确性
+    例如: 0001向 0002账户转帐1000元钱
+         0001 减去1000元
+         0002 加上1000元
+         以上两个操作,要么全都执行,要么全都不执行
+  3)使用事务的场景
+    - 对数据进行修改
+    - 如果修改成功,则提交事务;所有的修改都被保存,失败,则回滚,所有的修改都被撤销
+  4)MySQL中,启用事务的表必须是InnoDB存储引擎
+  5)事务特征:ACID特性*****************************************************
+    - 原子性(Atomicity):事务是一个整体,要么全都执行,要么全都不执行
+    - 一致性(Consistency)事务执行完成后,从一个一致性状态编程另一个一致性状态
+    - 隔离性(Isolation) 事务之间互不影响/干扰
+    - 持久性(Durability)事务一旦提交,对数据库的修改就必须持久保存
+  6)MySQL中操作事务
+    - 启动: start Transaction
+    - 提交: commit
+    - 回滚: rollback
+    
+    示例:利用事务控制转账操作
+    第一步:start Transaction -- 开启一个事务
+    第二部:修改表
+    update acct set balance = balance - 5000 where cust_num = 'C0002';
+    第三步:提交
+    commit
+    ------在提交前如果出错,可以rollback回到开始事务之前,只要没有commit这个事务就不会成立
+\**********************************************************************/
+课堂练习:
+使用eshop库,完成如下操作:
+1.利用子查询,查询所有订单状态为"申请退货"的客户名称,电话号码
+    1-待付款  2-待发货  3-已发货   4-已收货   5-申请退货    6-已退货    9-已废弃
+  select cust_name '客户姓名', cust_tel '电话号码' from customers 
+  where cust_id not in (select cust_id from orders where status = '5');
+
+2.利用连接查询,查询"待发货"订单的信息
+  查询结果包含的字段有:
+  (订单编号  下单时间)  (客户编号  客户电话  送货地址 )
+  连接查询:
+  select o.order_id '订单编号', o.order_date '订单时间', c.cust_id '客户编号', c.cust_tel '客户电话',
+           c.address '送货地址' from orders o,customers c where 
+      c.cust_id = o.cust_id and c.cust_id =  (select cust_id from orders where status = '2');
+
+  select o.order_id '订单编号', o.order_date '订单时间', c.cust_id '客户编号', c.cust_tel '客户电话',
+           c.address '送货地址' from orders o,customers c where 
+      c.cust_id = o.cust_id and o.status = '2'  -- 待送货  
+  
+  内连接:
+  select o.order_id '订单编号', o.order_date '订单时间', c.cust_id '客户编号', c.cust_tel '客户电话',
+           c.address '送货地址' from orders o inner join customers c on c.cust_id = o.cust_id and c.cust_id = 
+            (select cust_id from orders where status = '2');
+  左连接:
+  select o.order_id '订单编号', o.order_date '订单时间', c.cust_id '客户编号', c.cust_tel '客户电话',
+           c.address '送货地址' from orders o left join customers c on c.cust_id = o.cust_id and c.cust_id = 
+            (select cust_id from orders where status = '2');
+  右连接:
+  select o.order_id '订单编号', o.order_date '订单时间', c.cust_id '客户编号', c.cust_tel '客户电话',
+           c.address '送货地址' from orders o right join customers c on c.cust_id = o.cust_id and c.cust_id = 
+            (select cust_id from orders where status = '2');
+3.创建eshop_admin用户,并授权:
+ 1)eshop库所有表/所有权限
+ 2)允许从任意客户端登录
+ 3)设置密码
+ 
+ grant all privileges on *.* to 
+ 'eshop_admin'@'%' 
+ identified by '123456'
+4.创建eshop_user用户,并授权:
+ 1)eshop库中所有表的查询权限
+ 2)允许从任意客户端登录
+ 3)设置密码
+ grant select on eshop.* to
+ 'eshop_user'@'%'
+ identified by '123456'

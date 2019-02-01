@@ -1,0 +1,284 @@
+day01回顾
+1. 关系型数据库和非关系型数据库的比较
+  *　不是关系模型构建的数据库，不保证数据的一致性，结构更加自由灵活
+  *  非关系型数据库弥补了关系型数据库在处理高并发存储时读写效率的问题
+  *  非关系型数据库种类多样,技术不如关系型数据库成熟,没有统一的操作语句
+2. Mongodb特点,安装,基本设置
+3. 创建数据库
+   use database
+   db.dropDatabase() 删除数据库
+   show dbs 查看数据库
+   mongodump     备份
+   mongorestore  恢复
+   mongostat   数据库检测
+   mongotop    数据库读写时长
+4. 集合操作
+   db.createCollection()创建集合
+   db.collection.insert() 创建集合,如果集合存在添加数据,如果不存在创建集合
+   db.getCollection()     获取集合对象
+   db.collection.drop()  删除集合
+   db.collection.renameColletion()  集合的重命名
+   show collection  查看集合
+   db.class0.find()查看插入结果
+5. 文档
+   e.g. 向class0中插入一个文档
+   db.class0.insertOne({'name':'Lily','age':18,'sex':'w'})
+   * 在对文档操作时,键可以不加引号
+   * 可以自己添加_id域的值,但是_id域不能重复
+   * 一个集合中插入的文档是有顺序性的(先插先取)
+
+   插入多个文档:
+     db.collection.insertMany([{},{}..])
+     功能:插入多个文档
+     参数:数组中包含多个文档
+     db.class1.insertMany([
+         {name:'秀波',age:50,sex:'m'},
+         {name:'文章',age:37,sex:'m'},
+         {name:'林丹',age:31,sex:'m'}])
+    db.class0.insertMany([{"name" : "Emma", "age" : 19, "sex" : "w" },{"name" : "Abby", "age" : 17, "sex" : "w" },{"name" : "Levi", "age" : 18, "sex" : "m" },{  "name" : "jack", "age" : 16, "sex" : "m" }])
+
+    db.class1.insert([{"name" : "秀波", "age" : 50, "sex" : "m" },{"name" : "文章", "age" : 37, "sex" : "m" },{"name" : "林丹", "age" : 31, "sex" : "m" },{"name" : "老周", "age" : 30, "sex" : "w" },{ "name" : "百合", "age" : 33, "sex" : "w" }])
+
+   插入文档: db.collection.insert()
+            功能: 等于insertOne + insertMany
+    
+   save 插入文档 (特殊情况用)
+     db.collection.save()
+     功能: 插入文档,用法同insert
+     参数: 同insert,可以同时插入一条或多条文档;
+    e.g.  db.class0.save([{name:'Levi',age:18,sex:'m'},
+                          {name:'jack',age:16,sex:'m'}])
+    * save 如果要插入的文档_id已经存在则会修改原有文档
+    db.class0.save({_id:1,name:"Joy",age:19,sex:'m'})
+
+    查找操作
+    mysql:  select ... from table where
+    mongo:  db.collection.find(query,field)
+    query = where
+    find(query,field)
+    功能: 查找所有复合条件的文档
+    参数: query 表示筛选条件
+         field  表示要查找的域
+    如果不指定query和field查找所有内容:db.collection.find()
+    query:是一个键值对构成的文档,表达查找条件
+    e.g.  db.class0.find({age:18})
+    field: 是一个键值对构成文档,通过描述某个域的值是1或者0表示是否查找.
+           1表示查找该域0表示不查找
+           下面表示不显示_id,除了不显示sex以外的都显示
+           e.g. db.class0.find({},{_id:0,sex:0})
+           下面表示查找name和age,其他不显示
+           e.g. db.class0.find({},{_id:0,name:1,age:1})
+        * _id域如果不向查找则写_id:0,查找则不写
+        * 除_id外其他域要么全为0表示不查找这些域,要么全为1表示查找指定的域
+
+    findOne(query,field)
+    功能: 查找第一条符合条件的文档
+    参数: 同find
+    e.g. 查找第一个年龄为18岁的文档
+         db.class0.findOne({age:18},{_id:0})
+
+query的筛选功能
+  操作符: 使用$符号注明一个有特殊意义的字符串,表达丰富的含义,
+         比如:$lt 表示小于
+
+  比较操作符:
+    $eq 等于 = 
+        e.g. db.class0.find({age:{$eq:18}},{_id:0})
+    $lt 小于 <
+        e.g. db.class0.find({age:{$lt:18}},{_id:0})
+    $gt 大于 >
+        e.g. db.class0.find({age:{$gt:16}},{_id:0})
+
+    e.g. 大于16小于19
+         db.class0.find({age:{$gt:16,$lt:19}},{_id:0})
+
+         $lte  小于等于  <=
+         $gte  大于等于  >=
+         $ne   不能于   !=
+         $in    包含  
+         查找年龄在数组范围内的文档
+         e.g. {age:{$in:[16,17,18]}
+
+         $nin  不包含
+         e.g. 查找年龄不包含在数组中的
+         db.class0.find({age:{$nin:[18,19,20]}},{_id:0})
+
+逻辑操作符
+    表示逻辑与  
+      1. 在query文档中逗号隔开的多个键值对即表示与关系
+
+      e.g. 年龄18 并且性别为女
+        db.class0.find({age:18,sex:'w'},{_id:0})
+      
+      2. $and 表示逻辑与
+      e.g. db.class0.find(
+          {$and:[{age:{$gt:17}},{sex:'w'}]},
+          {_id:0})
+    
+      3. $or 逻辑或
+      e.g. 年龄小于18或者性别为女
+      db.class0.find(
+          {$or:[{age:{$lt:17}},{age:{$gt:18}}]},{_id:0})
+      
+      4. $not 逻辑非
+      e.g. 年龄不大于17的 
+      db.class0.find({age:{$not:{$gt:17}}},{_id:0})
+
+      5. 逻辑既不也不  $nor   ---->not (A or B)
+      e.g. 年龄不为17,且不为女
+      db.class0.find({$nor:[{age:{$lt:17}},{sex:'w'}]},{_id:0})
+
+      条件混合
+         年龄(大于18 或者小于17)并且性别为男的
+         db.class0.find({$or:[{age:{$gt:17}},{age:{$lt:20}}],sex:'m'},{_id:0})
+         年龄大于等于17的男生,或者姓名为Lily
+
+数组类型查找
+    数组: 一组数据的有序集合,有[]表示
+    * 有序性
+    * 数组中的元素可以是不同的数据类型
+  查找数组中包含某一项
+    
+    e.g.  查找数组中包含大于90的文档
+    db.class2.find({score:{$gt:90}},{_id:0})
+  查号数组中同时包含多项的  $all
+    e.g.  查找数组中同时包含83,80的
+    db.class2.find({score:{$all:[83,80]}},{_id:0})
+  根据数组元素个数查找,$size
+    e.g.  db.class2.find({score:{$size:2}},{_id:0})
+  选择数组的显示部分 $slice  (用于field参数)
+    e.g. 只显示数组中的前两项
+    db.class2.find({},{_id:0,score:{$slice:2}})
+    e.g. 跳过第一项,显示后面两项
+    db.class2.find({},{_id:0,score:{$slice:[1,2]}})
+ 
+其他查找操作符
+   $exists  判断一个域是否存在  值为bool
+   e.g. 查找不存在sex域的文档(true表示存在,false表示不存在)
+   db.class0.find({sex:{$exists:false}},{_id:0})
+
+   $mod 表示取余
+   {$mod:[2,1]}  对2求余等于1
+   e.g.  查找年龄除以2余数为1的
+   db.class0.find({age:{$mod:[2:1]}},{_id:0})
+
+   $type  表示值的数据类型筛选
+   e.g.  查找age数据类型为1的文档
+   db.class0.find({age:{$type:1}},{_id:0})
+   * 数据类型和数字对照标参看文档$type说明
+
+数据处理函数
+  db.collection.distinct(field)
+  功能: 获取某个集合值的范围  
+
+  e.g.  获取class0中age域的值
+      db.class0.distinct('age')
+
+  find().pretty()
+  功能:将find结果格式化显示
+
+  limit(n)
+  功能: 显示find结果的前n条文档 
+  e.g.  显示查找结果的前4条
+    db.class0.find({},{_id:0}).limit(4)
+
+  skip(n)
+  功能: 跳过前n条文档,显示后面的内容
+  e.g. 跳过前5条文档,显示后面的文档
+  db.class0.find({},{_id:0}).skip(5)
+
+  count()
+  功能: 对查找结果统计计数
+  e.g.  db.class0.find({age:{$gt:17}}).count() 年龄大于17的个数
+
+  sort({field:1/-1})
+  功能:对查找文档按照某个域的值排序
+  参数: 1表示升序  -1表示降序
+  e.g. db.class0.find({age:{$gt:16}}).sort({age:-1})
+
+  e.g.  年龄相同时按照name排序
+  db.class0.find({},{_id:0}).sort({age:1,name:1})
+
+  函数的连续调用
+    * 当一个函数的返回结果仍然是文档集合,可以继续调用函数
+    e.g.  年龄最大的三名同学
+    db.class0.find().sort({age:-1}).limit(3)
+
+    * 可以对文档集合通过序列号直接选择
+    e.g.  获取查找结果第1项
+    db.class0.find().sort({age:-1}).limit(3)[0]
+
+文档的删除操作
+  mysql :delete from table where ...
+  mongo : db.collection.deleteOne(query)
+          功能:  删除符合条件的第一条文档
+          参数:  query 筛选条件,用法同find query
+
+          e.g.  删除第一个年龄小于40的
+          db.class1.deleteOne({age:{$lt:40}})
+          
+          db.collection.deleteMany(query)
+          功能: 删除所有符合条件的文档
+          参数: query
+          db.class1.deleteMany({age:{$gt:30},sex:'m'})
+
+          db.collection.remove(query,justOne)
+          功能:删除文档
+          参数: query 筛选条件
+               justOne  默认false  此时同deleteMany 
+                        设置为true  此时同deleteOne
+          e.g. 删除第一条性别为m的文档
+          db.class0.remove({sex:'m'},true)
+
+          e.g. 删除所有集合中的文档
+          db.class0.deleteMany({})
+
+          db.collection.findOneAndDelete(query)
+          功能: 查找某个文档,并删除
+          参数: query
+          返回: 返回查找到的文档
+          e.g.  查找第一个年龄为17的文档并删除
+          db.class0.findOneAndDelete({age:17})
+           
+
+练习
+1. 创建数据库grade
+2. 在数据库中创建集合class
+3. 在集合中插入若干数据文档,文档结构
+   {name:xxx,age:10,sex:'m',hobyy:['draw','dance']}
+   年龄7-15岁
+    hobby: draw  dance  running  sing football  basketball  computer
+4. 查找练习
+   查看班级所有人信息
+   db.class.find({},{_id:0})
+   查看班级中年龄8岁学生信息
+   db.class.find({age:8},{_id:0})
+   查看年龄大于12岁学生信息
+   db.class.find({age:{$gt:12}},{_id:0})
+   查看年龄8-12岁的学生信息
+   db.class.find({age:{$gt:8,$lt:12}},{_id:0})
+   查看年龄9岁且喜欢画画的女生
+   db.class.find({$and:[{age:8},{sex:'w'},{hobyy:'draw'}]},{_id:0})
+
+   查看年龄小于8岁或者大于12岁的学生
+   db.class.find({$or:[{age:{$lt:8}},{age:{$gt:12}}]},{_id:0})
+
+   查看9岁或者11岁的学生
+   db.class.find({$or:[{age:9},{age:{$lt:11}}]},{_id:0})
+   查找有两项兴趣爱好的学生
+   db.class.find({hobyy:{$size:2}},{_id:0})
+
+   找到兴趣爱好有计算机的学生
+   db.class.find({hobyy:{$eq:'computer'}},{_id:0})
+   找到即喜欢画画又喜欢跳舞的学生
+    db.class.find({hobyy:{$all:['dance','draw']}},{_id:0})
+   统计兴趣有三项的学生人数
+   db.class.find({hobyy:{$size:3}},{_id:0}).count()
+   找到本班年龄第二大的学生
+   .sort({age:-1})[1]
+   找到班级中年龄最小的三个男生
+   db.class.find({sex:'m'},{_id:0}).sort({age:1}).limit(3)
+   查看班级中同学兴趣爱好范围
+   db.class.distinct('hobyy')
+   删除所有年龄小于8岁的同学
+   .deleteMany({age:{$lt:8}})

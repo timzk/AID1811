@@ -1,0 +1,295 @@
+day19回顾
+面向对象编程语言3个特征:
+    多继承.
+    封装.
+    多态
+      动态
+      静态
+多继承
+  一个子类继承自两个或两个以上的父类(基类)
+封装:
+  以双下划线(__)开头的标识符(属性,方法)
+
+解决标识符冲突问题:
+__mro__属性
+  用mor属性显示调用相应的方法:
+    super(类名,对象).方法名()
+
+钻石继承()
+
+函数重写:
+  內建函数: 10个
+  repr(x)     def __repr__(self) 返回符合python3语法的字符串,给python解释执行器用的,方便通信
+  str(x)      def __str__(self)
+  abs(x)
+  len(x)
+  reversed(x)
+  round(x)
+  int(x)
+  float(x)
+  complex(x)
+  bool(x)
+
+属性管理函数:
+  hasattr(obj,name)  等于obj.name
+  getattr(obj,name[,default])
+  setarrt(obj,name,value)
+  delattr(obj,name)
+
+可迭代对象,迭代器:
+  class A:
+    def  __iter__(self):
+        return 迭代器 #return self
+    def __next__(self):
+        '迭代器协议'
+        if 没有数据:
+            raise StopIterartion
+        return 数据
+
+issubclass(clas,类元组) 判断是否继承关系
+-----------------------------------
+day20 笔记
+异常(高级)
+  异常语句回顾:
+    try-except:  捕获异常(得到异常通知),把程序由异常状态转为正常状态
+    try-finally: 执行必须要要执行的语句
+    raise        发送异常通知,进入异常流程
+    assert       根据条件发送AssertionError类型的异常通知
+
+with语句
+  语法:
+    with 表达式1[as 变量1],表达式2[as 变量2],...
+  作用:
+    使用于对资源进行访问的场合,确保使用过程中不管是否发生异常,都会执行必要的'清理'操作,并释放资源
+  如:
+    文件使用手自动关闭,线程中锁的自动获取和释放等(线程后面会学)
+  说明:
+    执行表达式,用as子句中的变量绑定生成的对象
+    with语句并不改变异常的状态
+  示例:#此示例示意用with语句改写with.py中的try-finally的用法
+    try:
+        # fr = open("test.txt",'r')
+        with open("test.txt",'r') as fr:
+            for line in fr:
+                print(line) #for执行完毕后自动关闭,不需要写close()
+    except OSError:
+        print('打开文件失败')
+
+环境管理器
+  1.类内有__enter__和__exit__实例方法的类创建的实例称为环境管理器
+  2.能够用with进行管理的对象必须是环境管理器
+  3.__enter__将在进入with语句时被调用并返回由as变量管理的对象
+  4.__exit__将在离开with语句时被调用,也可以用参数来判断在离开with语句时是否有异常发生并做出相应的处理
+  示例:
+    class A:
+        def __enter__(self):
+            print("A.__enter__方法被调用")
+            self.file = open('test.txt')
+            return self #return返回的对象会被as变量所绑定
+        def __exit__(self,e_type,e_value,e_cb):
+            self.file.close()
+            if e_type is None:
+                print("正常离开with语句")
+            print("在离开with语句时发生了异常")
+            print("异常类型是:",e_type)
+            print("错误对象是:",e_value)
+            print("追踪对象是:",e_cb)
+            print("A.__exit__被调用,已离开with语句") 
+    with A() as a:
+        print(a.file.read())
+        print("这是with语句内部的语句")
+    print("程序正常退出")
+
+运算符 重载:
+  运算符重载是让自定义的类创建的对象(实例)能够使用运算符进行操作
+
+  作用:
+    1.让自定义的类的实例像內建对象一样进行运算符操作让程序简洁易读
+    2.对自定义的对象将运算符赋予新的规则
+算术运算符重载
+  方法名                      运算符和表达式         说明
+  __add__(self,rhs)          self + rhs           加法
+  __sub__(self,rhs)          self - rhs           减法
+  __mul__(self,rhs)          self * rhs           乘法
+  __truediv__(self,rhs)      self / rhs           除法除
+  __floordiv__(self,rhs)     self // rhs          地板除
+  __mod__(self,rhs)          self % rhs           求余
+  __pow__(self,rhs)          self ** rhs          幂运算
+  注:
+    rhs(right hand side) 右手边
+二元运算符的重载方法格式:
+  def __XXX__(self,other):
+    ...
+示例:
+  mynumber.py
+    class MyNumber:
+        def __init__(self,value):
+            self.data = value
+        def __repr__(self):#创建一个新的符合python3语法的表达式返回给print来打印
+            return 'MyNumber(%d)' % self.data
+        def __add__(self,other):
+            s = self.data + other.data
+            return MyNumber(s)  #创建一个新的对象并返回
+    n1 = MyNumber(100)
+    n2 = MyNumber(200)
+    n3 = n1 + n2 #等同于n3 = n1.__add__(n2)
+    print(n3)
+    print(n1,'+',n2,'=',n3)
+
+运算符重载说明:
+  运算符重载的方法及参数已经在固定的含义,不建议改变原有含义
+---------------------------------------------------------------------------   
+反向算术运算符重载
+  1.当运算符的左侧为內建类型时,右侧为自定义类型进行算术运算符运算时,会出现TypeError错误
+  2.因无法修改 內建类的对应方法来实现运算符重载,此时需要使用反向算术运算符的重载来完成重载
+  方法名                      运算符和表达式             说明
+  __radd__(self,rhs)          lhs +  self             加法
+  __rsub__(self,rhs)          lhs -  self             减法
+  __rmul__(self,rhs)          lhs *  self             乘法
+  __rtruediv__(self,rhs)      lhs /  self             除法除
+  __rfloordiv__(self,rhs)     lhs // self             地板除
+  __rmod__(self,rhs)          lhs %  self             求余
+  __rpow__(self,rhs)          lhs ** self             幂运算
+  注:
+    lhs(right hand side) 右手边
+---------------------------------------------------------------------------   
+复合赋值算术运算符的重载(不创建新的对象,只是修改旧的对象,节省资源)
+  1.以复合赋值算术运算符 x += y 为例,此运算符会优先调用x.__iadd__()方法,如果没有__iadd__方法时,会
+    将复合赋值运算符 x += y拆解为 x = x.__add__(y)方法,如果不存在__add__方法,则会触发TypeError类型
+    的错误,其他复合赋值运算符也是具有相同的规则
+
+        方法名                     运算符和表达式         说明
+    __iadd__(self,rhs)          self +=  rhs           加法
+    __isub__(self,rhs)          self -=  rhs           减法
+    __imul__(self,rhs)          self *=  rhs           乘法
+    __itruediv__(self,rhs)      self /=  rhs           除法除
+    __ifloordiv__(self,rhs)     self //= rhs           地板除
+    __imod__(self,rhs)          self % = rhs           求余
+    __ipow__(self,rhs)          self **= rhs           幂运算
+---------------------------------------------------------------------------    
+比较运算符的重载
+    方法名                     运算符和表达式         说明
+    __lt__(self,rhs)          self <  rhs           小于
+    __le__(self,rhs)          self <=  rhs          小于等于
+    __gt__(self,rhs)          self >  rhs           大于
+    __ge__(self,rhs)          self >=  rhs          大于等于
+    __eq__(self,rhs)          self == rhs           等于
+    __ne__(self,rhs)          self != rhs           不等于
+    注:
+      比较运算符通常返回布尔值True或False
+
+---------------------------------------------------------------------------   
+比较运算符的重载
+    方法名                     运算符和表达式         说明
+    __and__(self,rhs)         self & rhs            位与
+    __or__(self,rhs)          self |rhs             位或
+    __xor__(self,rhs)         self ^rhs             位异或
+    __lshift__(self,rhs)      self << rhs           左移
+    __rshift__(self,rhs)      self >> rhs           右移
+
+---------------------------------------------------------------------------       
+反向比较运算符的重载
+    方法名                     运算符和表达式            说明
+    __rand__(self,rhs)         self &  rhs            位与
+    __ror__(self,rhs)          self |  rhs            位或
+    __rxor__(self,rhs)         self ^  rhs            位异或
+    __rlshift__(self,rhs)      self << rhs            左移
+    __rrshift__(self,rhs)      self >> rhs            右移
+
+------------------------------------------------------------------
+一元运算符的重载
+    方法名                     运算符和表达式            说明
+    __neg__(self)              -self                  负号
+    __pos__(self)              +self                  正号
+    __invert__(self)           ~self                  取反
+
+重载格式
+  class 类名:
+      def __XXX__(self):
+            ...
+  示例:
+    def __neg__(self):
+        gen = (-x for x in self.iter)
+        return MyList(gen)
+
+    def __pos__(self):
+        gen = (abs(x) for x in self.iter)
+        return MyList(gen)
+
+in / not in 运算符重载
+  方法:
+    def __contains__(self,e):
+        return True 或 False 
+  运算符和表达式:
+    e in self
+    或
+    e not in self
+  说明:
+    not in 与 in 运算符返回值相反,只实现in即或,没有not in对象的方法
+  示例:
+    def __contains__(self,e):  # in / not in运算符
+        return e in self.iter
+
+-----------------------------------------------------------------
+索引和切片运算符的重载
+  方法名                运算符和表达式                  说明
+  __getitem__(self,i)   x = self[i]               索引/切片取值
+  __setitem__(self,i,v) self[i] = v               索引/切片赋值
+  __delitem__(self,i)   del self[i]               删除索引/切片
+
+  作用:
+    让自定义类型的对象能够支持索引和切片操作
+  示例:
+  def __getitem__(self,i):
+        return self.iter[i]
+
+  def __setitem__(self,i,v): #不需要return
+      self.iter[i] = v
+  def __delitem__(self,i):
+      del self.iter[i]   
+
+切片slice构造函数:L1[0::2] 如果给的是切片格式,相当于调用slice()函数
+  格式:
+    slice(start =None,stop = None,step=None)
+  作用:
+    创建一个slice切片对象,此对象存储一个切片的起始值,终止值和步长信息
+  slice对象的属性
+    s.start  切片的起始值(默认为None)
+    s.stop  切片的终止值(默认为None)
+    s.step   切片的步长(默认为None)
+
+  def __getitem__(self,i):
+      if type(i) is int:
+          print("索引")
+      elif type(i) is slice:
+          print("切片")
+      return self.iter[i]
+-----------------------------------------------------------------
+特性属性 @property
+  实现其他语言所拥有的getter和setter功能
+
+  作用:
+    用来模拟一个属性
+    通过@property装饰器可以用模拟属性的赋值和取值加以控制
+  示例:
+    property.py
+
+    class Student:
+        def __init__(self,s):
+            self.__score = s
+        def getscore(self):
+            '''getter获取者'''
+            return self.__score
+        def setscore(self,s):  #使用方法来修改隐藏属性__score
+            '''setter摄取者'''
+            assert 0 <=s <= 100 ,'成绩修改失败'
+            self.__score =s
+        score = property(getscore,setscore) #property关键字
+    stu = Student(59)  #取值stu.getscore()
+    print(stu.score)
+    stu.setscore(99)   #赋值stu.setscore(99)
+    print(stu.score)   #取值
+
+------------------------------------------------------------------------
+PEP8编码规范:
+  

@@ -1,0 +1,245 @@
+day09回顾:
+    函数的参数:
+        实参(给))
+            位置传参
+                序列传参    
+            关键字传参
+                字典关键字传参
+            例:
+                fx(1,2,3)
+                fx(*"ABC")
+                fx(a=1,c=3,b=2)
+                fx(**{'c':3,'b':2,'a':1})
+        形参(接收)
+            接收实参的引用关系(并不会复制对象)
+            缺省参数:
+                def fx(a=10,b=20,c=30):
+                    pass    
+            形参的定义:    
+                位置形参
+                *元组形参
+                命名关键字形参
+                ＊＊字典形参
+                def fx(a,b,*args,c=None,d=None,**kwargs)
+    全局变量和局部变量
+        局部:当前函数运行时,函数调用过程中存在
+        全局:函数以外的变量，函数自身也是一个变量
+        对象是否消失关系到变量的引用技术
+-----------------------------------------------------------------
+day10笔记
+globals和locals函数
+    globals()  返回当前全局作用域内变量的字典
+    locals()   返回当前局部作用域内变量的字典
+    a = 1
+    b = 2
+    c = 3
+    def fn(c,d):    
+        e= 300
+        print("locals()返回:",locals())
+        print("globals()返回:",globals())
+        print(globals()['c']) #局部变量打印全局变量的c，因为globals()返回的是一个字典
+    fn(100,200)
+
+函数变量
+    变量(没有类型只是存储地址,只是用作绑定关系)      对象(int,float,str,list,dict,函数)
+    函数名是变量,他在创建函数绑定一个函数
+
+    示例:
+      def f1():
+        print("f1被调用")
+    　f2=f1 #<<< 注意这里f1没加括号
+      f2()　#调用f2变量绑定的函数,让函数执行
+      f1()
+    示例:
+      def f1():
+        print("f1")
+      def f2():
+        print("f2"):
+      f1,f2 = f2,f1
+      f1() #打印的f2
+
+一个函数可以作为另一个函数的实参传递:
+    示例:
+        def f1():
+            print("f1函数被调用")
+        def f2():
+            print("f2函数被调用")
+        def fx(fn): #<function f1 at 0x7f5c1282ef28>
+            print(fn)#"f1函数被调用"
+            fn()
+        fx(f1)
+        fx(print) #可以的,打印的是print的内建函数地址
+    案例:
+      看懂如下代码:
+        def myfun(fn):
+            L=[1,3,5,7,9]
+            return fn(L)
+        print(myfun(max))#9
+        print(myfun(min))#1
+        print(myfun(sum))#25
+      请问执行结果是什么
+函数可以作为另一个函数的返回值:
+    一个函数内部可以用return语句返回另一个函数的引用关系
+    示例:
+    #此示例示意函数可以返回另一个函数的引用关系
+    def get_function():
+        s = input("请输入你要做的操作")
+        if s == '求最大':  
+            return max    #如果成立返回的max,f绑定max，即max(L),返回10
+        elif s == '求最小':
+            return min   #如果成立返回的max,f绑定min，即min(L),返回2
+        elif s == '求和':
+            return sum   #如果成立返回的sum,f绑定sum，即sum(L),返回25
+        else :
+            return print
+    L = [2,4,6,8,10]
+    f = get_function() #f绑定函数get_function()函数的返回值
+    print(f(L))
+
+函数的嵌套定义:
+    函数嵌套定义是指一个函数里用def 语句来创建其他函数的情况
+
+    示例:
+       def fn_outer():
+            print("fn_outer被调用")
+                def fn_inner(): #此函数是局部变量，在fn_outer()里面没有调用的时候不会执行此函数
+                    print("fn_inner被调用")
+                print("fn_outer调用结束")
+        fn_outer()
+        print("程序结束")
+
+python3 的作用域
+    作用域也叫名字空间,是访问变量时查找变量名的范围空间(范围逐渐扩大来寻找)
+
+python3 的四个作用域　LEGB  (名字空间,查找范围空间)
+          作用域　　　　　　　　　  英文解释　　　　　　　　　　　　        英文简写
+    局部作用域(函数内)             Local(function)                     L
+    外部嵌套函数作用域  　          Enclosing function local            E
+    函数定义所在模块的作用域(.py)   Global(module)                       G 
+    python 内置模块的作用域        Builtin(python)                      B 
+    #此示例示意作用域示例
+    示例:
+    v=100
+    def f1():
+        v=200
+        print("f1.v=",v) #打印200
+        def f2():
+            v = 300
+            print("f2.v=",v)
+        f2() #打印300
+    f1()
+    print("v=",v) #打印100
+变量名的查找规则:
+    在访问变量时,先查找本地变量,然后是包裹此函数的外部的内部的变量,之后是全局变量,最后是内置变量,即：
+    L >>>>>> E >>>>>>>>> G >>>>>>>>>>B
+    在默认的情况下,赋值语句只能在当前作用域内创建变量
+
+global语句:
+    作用:
+        告诉解释器,global语句声明的一个或多个变量,这些变量的作用域为模块级的作用域,
+        也称为全局作用域
+        全局声明global 将赋值变量映射到模块文件内部的作用域
+    语法:
+        global 变量名1,变量名2,...
+    示例：
+    v= 100
+    def f1():
+        global v #声明v为全局变量
+        v=200
+    f1()
+    print("V=",v) #100
+    说明:
+        1.全局变量如果要在函数内部被赋值,则必须经过全局声明(否则会被认为是局部变量)
+        2.全局变量在函数内部不经过声明就可以直接访问
+        3.不能先声明局部变量,再用global声明为全局变量,此做法不符合规则
+        v= 100
+        def f1():
+            v=200
+            global v #这里会报错,因为global前面一条语句已经生成了局部变量,此做法不符合规则
+        f1()
+        print("V=",v) #100
+        4.global 变量列表里的变量名不能出现在函数的形参列表里,
+        v= 100
+        def f1(v):
+            global v #语法报错,不能出现在形参列表里
+            v=200
+        f1(300)
+        print("V=",v) #100
+    
+    nonlocal语句
+        作用:
+            告诉解释执行器,nonlocal声明的变量不是局部变量,也不是全局变量,而是外部嵌套函数内的变量
+        语法:
+            nonlocal 变量名1,变量名2,...
+        示例:
+            v =100
+            def f1():
+                v = 200 #///////改变的这个\\\\\\\
+                print("函数开始时:f1.v",v)
+                def f2():
+                    nonlocal v #改变外部嵌套函数内的变量
+                    v = 300
+                    print("f2.v=".v)
+                f2()
+                print("函数结束时:f1.v",v)
+
+            f1()
+            print("全局的v=",v)
+        说明:
+            1.nonlocal 语句只能在被嵌套的函数内部进行使用
+            2.对nonlocal变量进行赋值将对外部嵌套函数作用域内的变量进行操作
+            3.当有两层或两层以上函数嵌套时,访问nonlocal变量只对最近一层的变量进行操作
+            4.nonlocal语句的变量列表里的变量名,不能出现在此函数的形参列表中
+
+lambda　表达式(又称匿名函数)
+    作用
+      创建一个匿名函数对象
+    语法格式:
+      lambda [函数的形参列表]:表达式
+      注:[]里的内容可以为空
+    返回值:
+      函数对象的引用关系
+    示例:
+    #lambda表达式创建函数示例
+    def myadd(x,y);
+        return x + y
+    #用lambda　表达式来改写上面的def 语句
+    myadd  = lambda x , y:x + y
+
+    print("20+30=",myadd(20,30))
+    print("40+50=",myadd(40,50))
+    说明:
+      lambda　表达式创建的函数只能包含一条表达式
+      lambda 比函数简单且可以随时创建和销毁,有利于减少程序的偶和度(偶和度为程序模块之间的关联程序)
+eval 和 exec 函数
+eval 函数：
+    作用:
+      把一个字符串当成一个表达式来执行,返回表达式执行后的结果(求表达式的值)
+    格式:
+      eval(source,global=None,local=None)
+    参数:
+      source 用于执行的表达式字符串
+      global用于描述source执行的全局变量环境的字典
+      local 用于描述source执行的局部变量环境的字典
+    示例:
+      s1 = "1+2*3"  #s1是符合python语法规则的字符串表达式
+      s2 = "x+y"
+      v = eval(s1) 
+      print(v)#7 s1是符合python语法规则的字符串表达式
+      v2 = eval(s2,{'x':10,'y':20}) #30,x,y都是全局变量
+      v2 = eval(s2,{'x':10,'y':20},{'y':2}) #12 x为全局变量,y为局部变量,首先使用局部变量
+exec 函数:
+    作用:
+      把一个字符串当成一个程序来执行,返回执行后的结果
+    格式:
+      exec(source,global=None,local=None)
+    参数:
+      source 用于执行的语句字符串
+      global用于描述source执行的全局变量环境的字典
+      local 用于描述source执行的局部变量环境的字典
+    示例:
+    s = '''
+    a = 100
+    print(a)
+    '''
+    exec(s) #打印的是100

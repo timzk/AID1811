@@ -1,0 +1,202 @@
+day14回顾
+异常(是一种错误通知机制,信号通知)能够快速将错误信息传达给调用者
+  异常相关语句:
+    try-except语句
+      捕获(接受)错误通知,将异常状态改为正常状态
+    try-finally语句
+      此语句能保证(正常流程/异常流程)都能执行必须要执行的语句
+    raise语句
+      发出异常通知,把程序转为异常状态(进入异常流程)
+    assert 语句
+      当条件不满足时,触发AssrtionError类型的错误通知
+迭代器 Iterator
+  迭代器是用来访问迭代对象的工具
+  iter(可迭代对象)从可迭代对象中获取迭代器
+  next(迭代器) 通过迭代器从可迭代对象中取值,没有值时会触发StopIteration异常通知
+
+-------------------------------------------------------------------
+day15笔记
+生成器Generator
+  生成器是能够动态提供数据的可迭代对象,比如range
+  生成器在程序运行时生成数据,与容器类不同,它通常不会在内存中保存大量的数据,而是现用现生成
+生成器的种类:
+  生成器函数:生成器函数调用时将返回一个生成器对象,生成器对象是一个可迭代对象,生成器对象通常是一次性的,通常不可重复使用
+           在生成器函数调用return会触发一个StopIteration异常(即生成数据结束)
+
+  生成器表达式
+
+生成器函数:
+  含有yield语句的函数是生成器函数,此函数被调用将返回一个生成器对象
+  yield翻译为生成(或生成)
+
+生成器函数yield语句:
+  语法:
+    yield表达式
+  说明:
+    yield用于def函数中,目的是将此函数作为生成器函数使用
+    yield用来生成数据,供迭代器的next(it)函数使用
+  示例:
+
+    myyield.py
+        def myyield():
+          yield 2 #一旦使用yield便是一个生成器函数
+          print("即将生成3")
+          yield 3
+          yield 5
+          yield 7  
+          print("生成器生成结果")
+
+    gen = myyield() #调用生成器函数生成一个生成器
+    print(gen)#generator (生成器表达式)
+
+    it = iter(gen) #从生成器中获取一个迭代器
+    print(next(it)) #向迭代器要数据,此时生成器函数才会执行一步 ,打印2
+    print(next(it))
+
+生成器示例:
+    myinteger.py
+
+生成器表达式
+  语法:
+    (表达式for 变量 in 可迭代对象 [if 真值表达式])
+  说明:
+    if 子句的部分可以省略
+  作用:
+    用推倒时形式创建新新的生成器,一次性的
+  示例:
+    gen = (x**2 for x in range(1,5))
+    it = iter(gen)
+    next(it) #1  等同于next(gen)
+    next(it) #4
+    next(it) #9
+    next(it) #16
+    next(it)  #StopIteration
+
+
+生成器说明:
+  生成器即是可迭代对象,同时它自身也是迭代器,不需要iter也可以直接只用next()
+  
+迭代工具函数:
+  迭代工具函数的作用是返回一个可迭代对象
+函数                                  说明
+zip(iter1,iter2..)            返回一个zip生成器对象此对象生成一个元组,此元组中的数据分别来自于iter1,iter2
+                              可迭代对象提供的数据个数由最小的可迭代对象参数决定
+enumerate(iterable,start=0)   创建一个enumerate生成器对象,此对象生成类型为(索引,值)对的元组,默认索引从零开始,
+                              也可以用start指定
+
+zip示例:
+  numbers = [10086,10000,10010,95588]
+  names = ['中国移动','中国电信','中国联通']
+  for t in zip(numbers,names):
+      print(t)
+  d = dict(zip(numbers,names)) #生成一个字典
+  for name,nub in zip(numbers,names): #把迭代工具放到name和nub中
+      print(name,nub) #10086 中国移动
+
+示意zip函数的内部实现原理,示例:
+  myzip.py
+
+enumerate 函数示例:
+  names = ['中国移动','中国电信','中国联通']
+  for t in enumerate(names):
+      print(t) #(0,'中国移动')(1,'中国电信')
+  
+  for index,name in enumerate(names):
+      if name =='中国联通'
+         del names[index]
+         break
+
+容器
+  列表list
+  字符串 str
+  字典 dict
+
+序列:
+  str,list,tuple,bytes,bytearray
+
+字节串 bytes 和字节数组bytearray
+字节串(也叫字节序列)bytes
+  作用:
+    存储以字节为单位的数据
+    字节串是不可变的字节序列
+
+字节(byte)
+  字节是由8个位(bit)组成的存储单元
+  字节是0-255之间的整数,用来表示一个字节的取值
+创建空字节串的字面值:
+  b''
+  b""
+  b''''''
+  b""""""
+
+创建非空字节串的字面值:
+  B = b'ABCD'  #b'65666768'   B[0]=65 用ascii码来表示 
+  B = b"ABCD"  有32个位 4*8
+  B = b'\x41\x42' #用十六进制表示
+
+字节串的构造函数 bytes
+  bytes() 生成一个空的字节串 等同于b''
+  bytes(0-255之间的整数可迭代对象)  用可迭代对象生成一个字节串
+  bytes(整数n)  生成n个值为0的字节串
+  bytes(字符串,encoding='utf-8') 用字符串的转换编码utf-8生成一个字节串
+
+示例:
+  B = bytes() #B =b''
+  B = bytes([65,66,67,78]) #B = b'ABCD'
+  B = bytes(5) #B=b'\x00\x00\x00\x00\x00\x00'
+  B = bytes("hello",'utf-8') #B = b'hello' 
+
+bytes 的运算: #和字符串运算方式相似
+  + += * *=    (b'ABCD' + b"1234")  等于b'ABCD1234'  
+  < <= > >= == !=
+  in/not in
+  索引/切片
+
+  示例:
+    B = b"ABC123"
+    b'12' in B #True
+    65  in  #True  A为65
+    print(B[2]) # 67  B为67
+    切片 print(B[0::2]) #b'AC2' 切片切出来的是字符,就不是字节了
+
+
+能用于字符串和字节数组的函数:
+  len(x),max(x),min(x),sum(x),any(x),all(x)
+
+bytes 与str的区别:
+  bytes存储字节(0-255的整数)
+  str存储UNICODE字符(0-65535~0x10FFFF的整数)
+
+bytes 与str的转换
+           编码encode
+    str -------------->bytes  
+      b = s.encode(encoding = 'utf-8')
+           解码decode
+    bytes----------------->str
+      s = b.decode(encoding='utf-8')
+
+  示例:
+    s = 'ABC中文'
+    b = s.encode()  #用utf-8编码规则转为字节串  b'ABC\xe4\xb8\xad\xe6\x96\x87'
+    s2 = b.decode()  #用utf-8编码规则解码为字符串  'ABC中文'
+    print(s == s2) #True  
+
+  bytearray字节数组:
+    可以认为是可变的字节串
+  构造函数:
+    bytearray()创建空的字节数组
+    bytearray(整数可迭代对象)
+    bytearray(整数n)
+    bytearray(字符串,encoding='utf-8')
+       (以上参数规则同字节串的规则,返回类型为bytearray)
+  
+  bytes 的运算: #和字符串运算方式相似
+  + += * *=     
+  < <= > >= == !=
+  in / not in
+  索引 / 切片
+    注意:字节数组支持索引赋值和切片赋值,规则同列表的索引和切片赋值
+  示例:
+    ba = bytearray([65,32,67,100,69])  #bytearray(b'A CdE')
+    ba[1] = 66 
+    ba[3] = 68   #bytearray(b'ABCDE')
